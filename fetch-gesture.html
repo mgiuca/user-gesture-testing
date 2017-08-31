@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      function requestFullscreen() {
+        const req = document.documentElement.requestFullscreen
+            || document.documentElement.webkitRequestFullscreen
+            || document.documentElement.mozRequestFullScreen;
+        req.apply(document.documentElement);
+      }
+
+      function sleepThenFS(delay) {
+        setTimeout(requestFullscreen, delay);
+      }
+
+      function fetchThenFS(delay) {
+        fetch('').then(requestFullscreen);
+      }
+
+      function xhrThenFS(delay) {
+        const client = new XMLHttpRequest();
+        client.onload = requestFullscreen;
+        client.open('GET', '');
+        client.send();
+      }
+    </script>
+  </head>
+  <body>
+    <p>Open the console for logging.</p>
+    <p>
+      <input type="button" onclick="requestFullscreen()" value="Just Fullscreen" />
+      <input type="button" onclick="sleepThenFS(0)" value="Sleep (0 s), then Fullscreen" />
+      <input type="button" onclick="sleepThenFS(900)" value="Sleep (0.9 s), then Fullscreen" />
+      <input type="button" onclick="sleepThenFS(5000)" value="Sleep (5 s), then Fullscreen" />
+      <input type="button" onclick="fetchThenFS()" value="Fetch, then Fullscreen" />
+      <input type="button" onclick="xhrThenFS()" value="XHR, then Fullscreen" />
+    </p>
+    <p>Note: All of these "should" work, except "Sleep (5 s)" which might
+    exceed the user agent's allowed time between gesture and request.</p>
+  </body>
+</html>
+
