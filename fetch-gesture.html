@@ -13,6 +13,10 @@
         setTimeout(requestFullscreen, delay);
       }
 
+      function sleepThenSleepThenFS(delay) {
+        setTimeout(sleepThenFS.bind(this, delay), delay);
+      }
+
       function fetchThenFS(delay) {
         fetch('').then(requestFullscreen);
       }
@@ -32,6 +36,7 @@
       <input type="button" onclick="sleepThenFS(0)" value="Sleep (0 s), then Fullscreen" />
       <input type="button" onclick="sleepThenFS(900)" value="Sleep (0.9 s), then Fullscreen" />
       <input type="button" onclick="sleepThenFS(5000)" value="Sleep (5 s), then Fullscreen" />
+      <input type="button" onclick="sleepThenSleepThenFS(400)" value="Sleep (0.4 s) x2, then Fullscreen" />
       <input type="button" onclick="fetchThenFS()" value="Fetch, then Fullscreen" />
       <input type="button" onclick="xhrThenFS()" value="XHR, then Fullscreen" />
     </p>
