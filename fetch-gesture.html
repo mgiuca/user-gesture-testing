@@ -19,11 +19,11 @@
         setTimeout(sleepThenFS.bind(this, delay), delay);
       }
 
-      function fetchThenFS(delay) {
+      function fetchThenFS() {
         fetch(fetchUrl).then(requestFullscreen);
       }
 
-      function xhrThenFS(delay) {
+      function xhrThenFS() {
         const client = new XMLHttpRequest();
         client.onload = requestFullscreen;
         client.open('GET', fetchUrl);
