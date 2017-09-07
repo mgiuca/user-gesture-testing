@@ -29,6 +29,23 @@
         client.open('GET', fetchUrl);
         client.send();
       }
+
+      function crazyHackFetchThenFS() {
+        let gotResult = false;
+        // Perform a fetch and set gotResult when done.
+        fetch(fetchUrl).then(() => {
+          gotResult = true;
+        });
+        // Launch 20 setTimeouts to wait for gotResult.
+        for (let delay = 0; delay < 1000; delay += 50) {
+          setTimeout(() => {
+            if (gotResult) {
+              gotResult = false;
+              requestFullscreen();
+            }
+          }, delay);
+        }
+      }
     </script>
   </head>
   <body>
@@ -41,6 +58,7 @@
       <input type="button" onclick="sleepThenSleepThenFS(400)" value="Sleep (0.4 s) x2, then Fullscreen" />
       <input type="button" onclick="fetchThenFS()" value="Fetch, then Fullscreen" />
       <input type="button" onclick="xhrThenFS()" value="XHR, then Fullscreen" />
+      <input type="button" onclick="crazyHackFetchThenFS()" value="Crazy hack fetch then Fullscreen" />
     </p>
     <p>Note: All of these "should" work, except "Sleep (5 s)" which might
     exceed the user agent's allowed time between gesture and request.</p>
