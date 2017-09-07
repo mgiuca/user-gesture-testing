@@ -32,19 +32,30 @@
 
       function crazyHackFetchThenFS() {
         let gotResult = false;
+        const pendingTimeouts = [];
+        let numPendingTimeouts = 0;
+        // Launch 20 setTimeouts to wait for gotResult.
+        for (let delay = 0; delay < 1000; delay += 50) {
+          pendingTimeouts.push(setTimeout(() => {
+            if (gotResult) {
+              // Clear the remaining timeouts.
+              for (const timeout of pendingTimeouts)
+                clearTimeout(timeout);
+              requestFullscreen();
+            }
+            numPendingTimeouts--;
+          }, delay));
+          numPendingTimeouts++;
+        }
         // Perform a fetch and set gotResult when done.
         fetch(fetchUrl).then(() => {
           gotResult = true;
+          // If there are no more timeouts after this, it's probably too late,
+          // but just make the request anyway. This way it will either succeed,
+          // or fail with an error message.
+          if (numPendingTimeouts == 0)
+            requestFullscreen();
         });
-        // Launch 20 setTimeouts to wait for gotResult.
-        for (let delay = 0; delay < 1000; delay += 50) {
-          setTimeout(() => {
-            if (gotResult) {
-              gotResult = false;
-              requestFullscreen();
-            }
-          }, delay);
-        }
       }
     </script>
   </head>
