@@ -2,6 +2,8 @@
 <html>
   <head>
     <script type="text/javascript">
+      const fetchUrl = 'cgi-bin/delay.py?delay=500';
+
       function requestFullscreen() {
         const req = document.documentElement.requestFullscreen
             || document.documentElement.webkitRequestFullscreen
@@ -18,13 +20,13 @@
       }
 
       function fetchThenFS(delay) {
-        fetch('').then(requestFullscreen);
+        fetch(fetchUrl).then(requestFullscreen);
       }
 
       function xhrThenFS(delay) {
         const client = new XMLHttpRequest();
         client.onload = requestFullscreen;
-        client.open('GET', '');
+        client.open('GET', fetchUrl);
         client.send();
       }
     </script>
