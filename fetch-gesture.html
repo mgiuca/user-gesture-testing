@@ -2,7 +2,13 @@
 <html>
   <head>
     <script type="text/javascript">
-      const fetchUrl = 'cgi-bin/delay.py?delay=500';
+      function getTimeDelay() {
+        return Math.floor(document.querySelector('#txtDelay').value * 1000);
+      }
+
+      function getFetchUrl() {
+        return `cgi-bin/delay.py?delay=${getTimeDelay()}`;
+      }
 
       function requestFullscreen() {
         const req = document.documentElement.requestFullscreen
@@ -11,27 +17,28 @@
         req.apply(document.documentElement);
       }
 
-      function sleepThenFS(delay) {
-        setTimeout(requestFullscreen, delay);
+      function sleepThenFS() {
+        setTimeout(requestFullscreen, getTimeDelay());
       }
 
-      function sleepThenSleepThenFS(delay) {
+      function sleepThenSleepThenFS() {
+        const delay = getTimeDelay();
         setTimeout(sleepThenFS.bind(this, delay), delay);
       }
 
       function fetchThenFS() {
-        fetch(fetchUrl).then(requestFullscreen);
+        fetch(getFetchUrl()).then(requestFullscreen);
       }
 
       function xhrThenFS() {
         const client = new XMLHttpRequest();
         client.onload = requestFullscreen;
-        client.open('GET', fetchUrl);
+        client.open('GET', getFetchUrl());
         client.send();
       }
 
       function crazyHackFetchThenFS() {
-        makePromisePropagateUserGesture(fetch(fetchUrl)).
+        makePromisePropagateUserGesture(fetch(getFetchUrl())).
           then(requestFullscreen);
       }
 
@@ -95,16 +102,17 @@
     <p>Open the console for logging.</p>
     <p>
       <input type="button" onclick="requestFullscreen()" value="Just Fullscreen" />
-      <input type="button" onclick="sleepThenFS(0)" value="Sleep (0 s), then Fullscreen" />
-      <input type="button" onclick="sleepThenFS(900)" value="Sleep (0.9 s), then Fullscreen" />
-      <input type="button" onclick="sleepThenFS(5000)" value="Sleep (5 s), then Fullscreen" />
-      <input type="button" onclick="sleepThenSleepThenFS(400)" value="Sleep (0.4 s) x2, then Fullscreen" />
+      <input type="button" onclick="sleepThenFS()" value="Sleep, then Fullscreen" />
+      <input type="button" onclick="sleepThenSleepThenFS()" value="Sleep x2, then Fullscreen" />
       <input type="button" onclick="fetchThenFS()" value="Fetch, then Fullscreen" />
       <input type="button" onclick="xhrThenFS()" value="XHR, then Fullscreen" />
       <input type="button" onclick="crazyHackFetchThenFS()" value="Crazy hack fetch then Fullscreen" />
     </p>
-    <p>Note: All of these "should" work, except "Sleep (5 s)" which might
-    exceed the user agent's allowed time between gesture and request.</p>
+    <p>Time delay: <input type="text" value="0.5" size="3" id="txtDelay" /> s
+       (controls the amount of time both setTimeout and fetch will take).</p>
+    <p>Note: All of these "should" work as long as the timeout is sufficiently
+       &lt; 1.0; otherwise it might exceed the user agent's allowed time between
+       gesture and request.</p>
   </body>
 </html>
 
