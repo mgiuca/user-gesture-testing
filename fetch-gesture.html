@@ -31,30 +31,62 @@
       }
 
       function crazyHackFetchThenFS() {
-        let gotResult = false;
-        const pendingTimeouts = [];
-        let numPendingTimeouts = 0;
-        // Launch 20 setTimeouts to wait for gotResult.
-        for (let delay = 0; delay < 1000; delay += 50) {
-          pendingTimeouts.push(setTimeout(() => {
-            if (gotResult) {
-              // Clear the remaining timeouts.
-              for (const timeout of pendingTimeouts)
-                clearTimeout(timeout);
-              requestFullscreen();
-            }
-            numPendingTimeouts--;
-          }, delay));
-          numPendingTimeouts++;
-        }
-        // Perform a fetch and set gotResult when done.
-        fetch(fetchUrl).then(() => {
-          gotResult = true;
-          // If there are no more timeouts after this, it's probably too late,
-          // but just make the request anyway. This way it will either succeed,
-          // or fail with an error message.
-          if (numPendingTimeouts == 0)
-            requestFullscreen();
+        makePromisePropagateUserGesture(fetch(fetchUrl)).
+          then(requestFullscreen);
+      }
+
+      // If called from a context that is triggered by user activation, executes
+      // Promise |p| in such a way that its resolve function is considered
+      // triggered by user activation, if it resolves within an appropriate
+      // time-frame.
+      function makePromisePropagateUserGesture(p) {
+        // Amount of time to assume the user agent will allow a user activation
+        // token to propagate for (based on Chromium value).
+        const kPropagationMaxTimeMs = 1000;
+        const kPollIntervalMs = 50;
+
+        return new Promise((resolve, reject) => {
+          // 0 = pending, 1 = resolved, 2 = rejected.
+          let promiseOutcome = 0;
+          let promiseResult = null;
+          const pendingTimeouts = [];
+          let numPendingTimeouts = 0;
+
+          // Many setTimeouts, each with a different delay, to wait for
+          // |p| to resolve or reject.
+          for (let delay = 0; delay < kPropagationMaxTimeMs;
+               delay += kPollIntervalMs) {
+            pendingTimeouts.push(setTimeout(() => {
+              if (promiseOutcome > 0) {
+                // Clear the remaining timeouts.
+                for (const timeout of pendingTimeouts)
+                  clearTimeout(timeout);
+
+                if (promiseOutcome == 1)
+                  resolve(promiseResult);
+                else
+                  reject(promiseResult);
+              }
+              numPendingTimeouts--;
+            }, delay));
+            numPendingTimeouts++;
+          }
+
+          // Perform |p| and set |promiseOutcome|, |promiseResult| when done.
+          p.then(result => {
+            promiseOutcome = 1;
+            promiseResult = result;
+            // If there are no more timeouts after this, this is the last
+            // opportunity to resolve the promise, so do it now (though we've
+            // probably lost the user gesture).
+            if (numPendingTimeouts == 0)
+              resolve(result);
+          }).catch(error => {
+            promiseOutcome = 2;
+            promiseResult = error;
+            if (numPendingTimeouts == 0)
+              reject(error);
+          });
         });
       }
     </script>
