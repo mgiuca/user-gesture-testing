@@ -109,7 +109,9 @@
       <input type="button" onclick="crazyHackFetchThenFS()" value="Crazy hack fetch then Fullscreen" />
     </p>
     <p>Time delay: <input type="text" value="0.5" size="3" id="txtDelay" /> s
-       (controls the amount of time both setTimeout and fetch will take).</p>
+       (controls the amount of time both setTimeout and fetch will take, but if
+       using the public GitHub version, fetch will always return
+       immediately).</p>
     <p>Note: All of these "should" work as long as the timeout is sufficiently
        &lt; 1.0; otherwise it might exceed the user agent's allowed time between
        gesture and request.</p>
